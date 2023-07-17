@@ -195,12 +195,16 @@ class Instance(models.Model):
     password = fields.EncryptedCharField(
         verbose_name="密码", max_length=300, default="", blank=True
     )
+    is_ssl = models.BooleanField("是否启用SSL", default=False)
     db_name = models.CharField("数据库", max_length=64, default="", blank=True)
     charset = models.CharField("字符集", max_length=20, default="", blank=True)
     service_name = models.CharField(
         "Oracle service name", max_length=50, null=True, blank=True
     )
     sid = models.CharField("Oracle sid", max_length=50, null=True, blank=True)
+    awsSecretId = models.CharField(
+        "AWS Secret Id", max_length=50, null=True, blank=True
+    )
     resource_group = models.ManyToManyField(
         ResourceGroup, verbose_name="资源组", blank=True
     )

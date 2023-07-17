@@ -1,6 +1,8 @@
 """engine base库, 包含一个``EngineBase`` class和一个get_engine函数"""
 from sql.engines.models import ResultSet, ReviewSet
 from sql.utils.ssh_tunnel import SSHConnection
+import boto3
+import simplejson as json
 
 
 class EngineBase:
@@ -20,6 +22,15 @@ class EngineBase:
             self.password = instance.password
             self.db_name = instance.db_name
             self.mode = instance.mode
+            self.awsSecretId = instance.awsSecretId
+            self.is_ssl = instance.is_ssl
+
+            if not self.awsSecretId == None and self.awsSecretId.strip():
+                client = boto3.client("secretsmanager")
+                response = client.get_secret_value(SecretId=instance.awsSecretId)
+                secret = json.loads(response["SecretString"])
+                self.user = secret["username"]
+                self.password = secret["password"]
 
             # 判断如果配置了隧道则连接隧道，只测试了MySQL
             if self.instance.tunnel:
@@ -62,6 +73,14 @@ class EngineBase:
             self.remote_port = instance.port
             self.remote_user = instance.user
             self.remote_password = instance.password
+
+        if not instance.awsSecretId == None and instance.awsSecretId.strip():
+            client = boto3.client("secretsmanager")
+            response = client.get_secret_value(SecretId=instance.awsSecretId)
+            secret = json.loads(response["SecretString"])
+            self.remote_user = secret["username"]
+            self.remote_password = secret["password"]
+
         return (
             self.remote_host,
             self.remote_port,
